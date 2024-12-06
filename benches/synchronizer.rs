@@ -4,7 +4,7 @@ use criterion::{black_box, criterion_group, criterion_main, Criterion, Throughpu
 use pprof::criterion::PProfProfiler;
 use rkyv::{util::AlignedVec, Archive, Deserialize, Serialize, rancor::Error as RkyvErr};
 #[cfg(unix)]
-use wyhash::WyHash;
+use rapidhash::RapidHasher;
 
 #[cfg(unix)]
 use mmap_sync::locks::{LockDisabled, SingleWriter};
@@ -66,17 +66,17 @@ pub fn bench_synchronizer(c: &mut Criterion) {
 
 #[cfg(unix)]
 fn build_synchronizers_for_strategies() -> (
-    Synchronizer<WyHash, LockDisabled, 1024, 1_000_000_000>,
-    Synchronizer<WyHash, SingleWriter, 1024, 1_000_000_000>,
+    Synchronizer<RapidHasher, LockDisabled, 1024, 1_000_000_000>,
+    Synchronizer<RapidHasher, SingleWriter, 1024, 1_000_000_000>,
 ) {
     let disabled_path = "/dev/shm/mmap_sync_lock_disabled";
     let single_writer_path = "/dev/shm/mmap_sync_lock_single_writer";
 
     (
-        Synchronizer::<WyHash, LockDisabled, 1024, 1_000_000_000>::with_params(
+        Synchronizer::<RapidHasher, LockDisabled, 1024, 1_000_000_000>::with_params(
             disabled_path.as_ref(),
         ),
-        Synchronizer::<WyHash, SingleWriter, 1024, 1_000_000_000>::with_params(
+        Synchronizer::<RapidHasher, SingleWriter, 1024, 1_000_000_000>::with_params(
             single_writer_path.as_ref(),
         ),
     )

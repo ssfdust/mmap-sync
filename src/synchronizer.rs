@@ -17,7 +17,7 @@ use rkyv::{
     Archive, Portable, Serialize,
 };
 use thiserror::Error;
-use wyhash::WyHash;
+use rapidhash::RapidHasher;
 
 use crate::data::DataContainer;
 use crate::guard::{ReadGuard, ReadResult};
@@ -36,7 +36,7 @@ use crate::synchronizer::SynchronizerError::*;
 ///   - `N` - serializer scratch space size
 ///   - `SD` - sleep duration in nanoseconds used by writer during lock acquisition (default 1s)
 pub struct Synchronizer<
-    H: Hasher + Default = WyHash,
+    H: Hasher + Default = RapidHasher,
     WL = LockDisabled,
     const N: usize = 1024,
     const SD: u64 = 1_000_000_000,
@@ -267,7 +267,7 @@ mod tests {
     use std::fs;
     use std::path::Path;
     use std::time::Duration;
-    use wyhash::WyHash;
+    use rapidhash::RapidHasher;
 
     #[derive(Archive, Deserialize, Serialize, Debug, PartialEq)]
     #[rkyv(derive(Debug))]
@@ -405,8 +405,8 @@ mod tests {
         let mut entity_generator = MockEntityGenerator::new(3);
         let entity = entity_generator.gen(100);
 
-        let mut writer1 = Synchronizer::<WyHash, SingleWriter>::with_params(PATH.as_ref());
-        let mut writer2 = Synchronizer::<WyHash, SingleWriter>::with_params(PATH.as_ref());
+        let mut writer1 = Synchronizer::<RapidHasher, SingleWriter>::with_params(PATH.as_ref());
+        let mut writer2 = Synchronizer::<RapidHasher, SingleWriter>::with_params(PATH.as_ref());
 
         writer1.write(&entity, Duration::from_secs(1)).unwrap();
         assert!(matches!(
